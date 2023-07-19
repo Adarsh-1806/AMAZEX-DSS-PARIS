@@ -71,8 +71,10 @@ contract Challenge3Test is Test {
         // terminal command to run the speciffic test:                        //
         // forge test --match-contract Challenge3Test -vvvv                   //
         //////////////////////////////////////////////////////////////////////*/
-
-
+        console.log("First createDeployer:",address(createDeployer));
+        console.log("First lendingPool:",address(lendingPool));
+        lendingPool.emergencyStop();
+        createDeployer.cleanUp();
 
     
         //====================================================================//
@@ -89,7 +91,11 @@ contract Challenge3Test is Test {
         // forge test --match-contract Challenge3Test -vvvv           //
         //////////////////////////////////////////////////////////////*/
 
+        createDeployer = CreateDeployer(create2Deployer.deploy());
+        lendingPool = LendingPool(createDeployer.deploy(false, address(usdc)));
 
+        console.log("Second createDeployer:",address(createDeployer));
+        console.log("Second lendingPool:",address(lendingPool));
 
 
         //=============================================================//
